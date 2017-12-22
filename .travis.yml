@@ -1,9 +1,22 @@
 sudo: false
 language: python
+services:
+  # For Gnocchi
+  - docker
 install:
-      - pip install tox 
+      - pip install tox
+      - |
+        [ "$TOXENV" == "gnocchi" ] && docker pull gnocchixyz/ci-tools:latest
 script:
-      - tox
+      - |
+        case "$TOXENV" in
+            gnocchi)
+              docker run -v ~/.cache/pip:/home/tester/.cache/pip -v $(pwd):/home/tester/src gnocchixyz/ci-tools:latest tox -e ${TOXENV}
+              ;;
+            *)
+              tox
+              ;;
+        esac
 matrix:
     include:
         - env: TOXENV=py27
